@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wine Quality Predictor</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Montserrat:wght@300;400;500;600&display=swap"
+    rel="stylesheet" />
+  <style>
+    :root {
+      --wine: #6B1A2A;
+      --wine-deep: #3D0A14;
+      --wine-light: #A8324A;
+      --gold: #C9A84C;
+      --gold-light: #E8C97A;
+      --cream: #F5EFE0;
+      --cream-dark: #E8DCC8;
+      --text: #1C0A0E;
+      --text-muted: #6B4A52;
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--wine-deep);
+      background-image:
+        radial-gradient(ellipse at 20% 20%, rgba(107, 26, 42, 0.6) 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 80%, rgba(61, 10, 20, 0.8) 0%, transparent 60%),
+        url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.015'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+      min-height: 100vh;
+      font-family: 'Montserrat', sans-serif;
+      color: var(--cream);
+      padding: 40px 20px;
+    }
+
+    .page-wrapper {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    /* HEADER */
+    header {
+      text-align: center;
+      margin-bottom: 50px;
+      animation: fadeDown 0.8s ease both;
+    }
+
+    .logo-line {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      margin-bottom: 12px;
+    }
+
+    .logo-line .divider {
+      height: 1px;
+      width: 80px;
+      background: linear-gradient(to right, transparent, var(--gold));
+    }
+
+    .logo-line .divider.right {
+      background: linear-gradient(to left, transparent, var(--gold));
+    }
+
+    .logo-icon {
+      font-size: 2rem;
+    }
+
+    h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2.4rem, 6vw, 3.8rem);
+      font-weight: 300;
+      letter-spacing: 0.04em;
+      color: var(--cream);
+      line-height: 1.1;
+    }
+
+    h1 span {
+      color: var(--gold);
+      font-style: italic;
+    }
+
+    .subtitle {
+      margin-top: 10px;
+      font-size: 0.78rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--gold-light);
+      opacity: 0.8;
+    }
+
+    /* CARD */
+    .card {
+      background: rgba(245, 239, 224, 0.06);
+      border: 1px solid rgba(201, 168, 76, 0.2);
+      border-radius: 2px;
+      backdrop-filter: blur(10px);
+      padding: 42px 48px;
+      animation: fadeUp 0.9s ease 0.2s both;
+    }
+
+    .card-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.05rem;
+      font-weight: 400;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 32px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .card-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(to right, rgba(201, 168, 76, 0.4), transparent);
+    }
+
+    /* GRID */
+    .fields-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 22px;
+      margin-bottom: 36px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    label {
+      font-size: 0.68rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--gold-light);
+      opacity: 0.85;
+    }
+
+    input[type="number"] {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(201, 168, 76, 0.25);
+      border-radius: 2px;
+      padding: 11px 14px;
+      color: var(--cream);
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 300;
+      transition: border-color 0.25s, background 0.25s;
+      width: 100%;
+      outline: none;
+      -moz-appearance: textfield;
+    }
+
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+    }
+
+    input[type="number"]:focus {
+      border-color: var(--gold);
+      background: rgba(201, 168, 76, 0.06);
+    }
+
+    input[type="number"]:hover {
+      border-color: rgba(201, 168, 76, 0.5);
+    }
+
+    .hint {
+      font-size: 0.62rem;
+      color: var(--text-muted);
+      color: rgba(245, 239, 224, 0.35);
+      letter-spacing: 0.05em;
+    }
+
+    /* BUTTON */
+    .btn-wrap {
+      display: flex;
+      justify-content: center;
+      margin-top: 8px;
+    }
+
+    button {
+      background: linear-gradient(135deg, var(--wine) 0%, var(--wine-light) 100%);
+      border: 1px solid var(--gold);
+      color: var(--gold-light);
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      padding: 15px 52px;
+      cursor: pointer;
+      border-radius: 2px;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    button::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 100%);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    button:hover::before {
+      opacity: 0.12;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 32px rgba(107, 26, 42, 0.5), 0 0 0 1px var(--gold);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    button span {
+      position: relative;
+      z-index: 1;
+    }
+
+    /* RESULT */
+    #result {
+      margin-top: 36px;
+      display: none;
+      animation: fadeUp 0.5s ease both;
+    }
+
+    .result-inner {
+      border: 1px solid rgba(201, 168, 76, 0.35);
+      border-radius: 2px;
+      padding: 32px;
+      text-align: center;
+      background: rgba(201, 168, 76, 0.04);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .result-inner::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(to right, transparent, var(--gold), transparent);
+    }
+
+    .result-label {
+      font-size: 0.68rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--gold-light);
+      opacity: 0.7;
+      margin-bottom: 10px;
+    }
+
+    .result-score {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 5rem;
+      font-weight: 300;
+      color: var(--gold);
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+
+    .result-desc {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 1.3rem;
+      color: var(--cream);
+      opacity: 0.8;
+    }
+
+    .stars {
+      margin-top: 14px;
+      font-size: 1.2rem;
+      letter-spacing: 4px;
+      color: var(--gold);
+    }
+
+    /* ERROR */
+    .error-msg {
+      text-align: center;
+      color: #e07070;
+      font-size: 0.82rem;
+      margin-top: 14px;
+      display: none;
+    }
+
+    /* LOADING */
+    .loading {
+      display: none;
+      text-align: center;
+      margin-top: 16px;
+    }
+
+    .loading-dots span {
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      background: var(--gold);
+      border-radius: 50%;
+      margin: 0 3px;
+      animation: bounce 1.2s infinite;
+    }
+
+    .loading-dots span:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+
+    .loading-dots span:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+
+    /* FOOTER */
+    footer {
+      text-align: center;
+      margin-top: 40px;
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: rgba(245, 239, 224, 0.2);
+      animation: fadeUp 1s ease 0.5s both;
+    }
+
+    /* ANIMATIONS */
+    @keyframes fadeDown {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes bounce {
+
+      0%,
+      80%,
+      100% {
+        transform: translateY(0);
+      }
+
+      40% {
+        transform: translateY(-8px);
+      }
+    }
+
+    @media (max-width: 600px) {
+      .card {
+        padding: 28px 22px;
+      }
+
+      .fields-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="page-wrapper">
+
+    <header>
+      <div class="logo-line">
+        <div class="divider"></div>
+        <span class="logo-icon">🍷</span>
+        <div class="divider right"></div>
+      </div>
+      <h1>Wine Quality <span>Predictor</span></h1>
+      <p class="subtitle">Random Forest · Machine Learning · WineQT Dataset</p>
+    </header>
+
+    <div class="card">
+      <div class="card-title">Enter Wine Parameters</div>
+
+      <div class="fields-grid">
+        <div class="field">
+          <label>Fixed Acidity</label>
+          <input type="number" id="fixed_acidity" step="0.1" value="7.4" />
+          <span class="hint">Range: 6.0 – 10.0</span>
+        </div>
+        <div class="field">
+          <label>Volatile Acidity</label>
+          <input type="number" id="volatile_acidity" step="0.01" value="0.5" />
+          <span class="hint">Range: 0.2 – 0.8</span>
+        </div>
+        <div class="field">
+          <label>Citric Acid</label>
+          <input type="number" id="citric_acid" step="0.01" value="0.3" />
+          <span class="hint">Range: 0.0 – 0.5</span>
+        </div>
+        <div class="field">
+          <label>Residual Sugar</label>
+          <input type="number" id="residual_sugar" step="0.1" value="2.0" />
+          <span class="hint">Range: 1.5 – 8.0</span>
+        </div>
+        <div class="field">
+          <label>Chlorides</label>
+          <input type="number" id="chlorides" step="0.001" value="0.08" />
+          <span class="hint">Range: 0.05 – 0.15</span>
+        </div>
+        <div class="field">
+          <label>Free Sulfur Dioxide</label>
+          <input type="number" id="free_sulfur_dioxide" step="1" value="15" />
+          <span class="hint">Range: 5 – 40</span>
+        </div>
+        <div class="field">
+          <label>Total Sulfur Dioxide</label>
+          <input type="number" id="total_sulfur_dioxide" step="1" value="100" />
+          <span class="hint">Range: 20 – 150</span>
+        </div>
+        <div class="field">
+          <label>Density</label>
+          <input type="number" id="density" step="0.0001" value="0.995" />
+          <span class="hint">Range: 0.990 – 1.000</span>
+        </div>
+        <div class="field">
+          <label>pH</label>
+          <input type="number" id="ph" step="0.01" value="3.2" />
+          <span class="hint">Range: 3.0 – 3.6</span>
+        </div>
+        <div class="field">
+          <label>Sulphates</label>
+          <input type="number" id="sulphates" step="0.01" value="0.6" />
+          <span class="hint">Range: 0.4 – 1.0</span>
+        </div>
+        <div class="field">
+          <label>Alcohol (%)</label>
+          <input type="number" id="alcohol" step="0.1" value="10.5" />
+          <span class="hint">Range: 9.0 – 13.0 ⭐ Most important!</span>
+        </div>
+      </div>
+
+      <div class="btn-wrap">
+        <button onclick="predict()"><span>Analyse Wine Quality</span></button>
+      </div>
+
+      <div class="loading" id="loading">
+        <div class="loading-dots">
+          <span></span><span></span><span></span>
+        </div>
+      </div>
+
+      <p class="error-msg" id="error">⚠ Could not connect to server. Make sure Flask is running!</p>
+
+      <div id="result">
+        <div class="result-inner">
+          <div class="result-label">Predicted Quality Score</div>
+          <div class="result-score" id="score">—</div>
+          <div class="result-desc" id="desc">—</div>
+          <div class="stars" id="stars"></div>
+        </div>
+      </div>
+    </div>
+
+    <footer>Wine Quality Predictor &mdash; Mini Project &mdash; Random Forest Classifier</footer>
+  </div>
+
+  <script>
+    const descriptions = {
+      5: { text: "Acceptable Quality", stars: "★★★☆☆" },
+      6: { text: "Good Quality", stars: "★★★★☆" },
+      7: { text: "Excellent Quality", stars: "★★★★★" },
+    };
+
+    async function predict() {
+      const ids = [
+        "fixed_acidity", "volatile_acidity", "citric_acid", "residual_sugar",
+        "chlorides", "free_sulfur_dioxide", "total_sulfur_dioxide",
+        "density", "ph", "sulphates", "alcohol"
+      ];
+
+      const data = {};
+      for (const id of ids) {
+        const val = parseFloat(document.getElementById(id).value);
+        if (isNaN(val)) {
+          showError("Please fill in all fields with valid numbers.");
+          return;
+        }
+        data[id] = val;
+      }
+
+      document.getElementById("result").style.display = "none";
+      document.getElementById("error").style.display = "none";
+      document.getElementById("loading").style.display = "block";
+
+      try {
+        const res = await fetch("/predict", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data)
+        });
+
+        if (!res.ok) throw new Error("Server error");
+        const json = await res.json();
+        showResult(json.quality);
+
+      } catch (e) {
+        showError();
+      } finally {
+        document.getElementById("loading").style.display = "none";
+      }
+    }
+
+    function showResult(quality) {
+      const info = descriptions[quality] || { text: "Unknown Quality", stars: "☆☆☆☆☆" };
+      document.getElementById("score").textContent = quality;
+      document.getElementById("desc").textContent = info.text;
+      document.getElementById("stars").textContent = info.stars;
+      const el = document.getElementById("result");
+      el.style.display = "block";
+      el.style.animation = "none";
+      el.offsetHeight;
+      el.style.animation = "fadeUp 0.5s ease both";
+    }
+
+    function showError(msg) {
+      const el = document.getElementById("error");
+      el.textContent = msg || "⚠ Could not connect to server. Make sure Flask is running!";
+      el.style.display = "block";
+    }
+  </script>
+</body>
+
+</html>
